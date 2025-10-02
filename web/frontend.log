@@ -1,0 +1,160 @@
+
+> qa@1.0.0-dev dev
+> next dev --turbo
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of /Users/nguyenbinhan/Workspace/AgentAI/Onyx/onyx/package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * /Users/nguyenbinhan/Workspace/AgentAI/Onyx/onyx/web/package-lock.json
+
+   ▲ Next.js 15.5.4 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.99:3000
+   - Environments: .env.local
+   - Experiments (use with caution):
+     · clientTraceMetadata
+
+ ✓ Starting...
+ ○ Compiling instrumentation Node.js ...
+ ✓ Compiled instrumentation Node.js in 798ms
+ ✓ Compiled instrumentation Edge in 248ms
+ ✓ Compiled middleware in 141ms
+ ✓ Ready in 2.7s
+ ○ Compiling /api/[...path] ...
+ ✓ Compiled /api/[...path] in 1514ms
+ GET /api/auth/type 200 in 2381ms
+ GET /api/settings 200 in 362ms
+ ○ Compiling / ...
+ ✓ Compiled / in 4.5s
+ GET / 307 in 5092ms
+ GET / 307 in 312ms
+ ○ Compiling /chat ...
+ ✓ Compiled /chat in 5s
+ GET /chat 200 in 5982ms
+ GET /api/health 200 in 574ms
+ GET /api/chat/search?page=1&page_size=10 200 in 1049ms
+ GET /api/me 200 in 1077ms
+ GET /api/notifications 200 in 1132ms
+ GET /api/federated 200 in 1132ms
+ GET /api/federated/oauth-status 200 in 561ms
+ GET /api/admin/llm/built-in/options 200 in 771ms
+ GET /api/llm/provider 200 in 804ms
+ GET /api/user/assistant/preferences 200 in 807ms
+ GET /api/user/files/recent 200 in 870ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 934ms
+ GET /api/admin/llm/built-in/options 200 in 359ms
+ GET /api/federated/oauth-status 200 in 378ms
+ GET /api/llm/provider 200 in 371ms
+ GET /api/admin/llm/built-in/options 200 in 295ms
+ GET /api/llm/provider 200 in 335ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 376ms
+ POST /api/admin/llm/test/default 400 in 1083ms
+ POST /api/admin/llm/test/default 400 in 1088ms
+ POST /api/admin/llm/test/default 400 in 3433ms
+ ○ Compiling /agenthub ...
+ ✓ Compiled /agenthub in 823ms
+ GET /agenthub 200 in 994ms
+ GET /api/health 200 in 1022ms
+ GET /api/chat/search?page=1&page_size=10 200 in 1135ms
+ GET /api/federated/oauth-status 200 in 1178ms
+ GET /api/user/files/recent 200 in 1188ms
+ GET /api/me 200 in 1164ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 1353ms
+ GET /api/notifications 200 in 645ms
+ GET /api/chat/search?page=1&page_size=10 200 in 545ms
+ GET /api/federated 200 in 616ms
+ GET /api/user/files/recent 200 in 552ms
+ GET /api/federated/oauth-status 200 in 557ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 531ms
+ GET /api/federated/oauth-status 200 in 382ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 396ms
+ GET /api/federated/oauth-status 200 in 400ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 369ms
+ GET /api/health 200 in 495ms
+ GET /api/notifications 200 in 444ms
+ GET /api/federated 200 in 413ms
+ ○ Compiling /admin/indexing/status ...
+ ✓ Compiled /admin/indexing/status in 2.5s
+ GET /admin/indexing/status 200 in 3031ms
+ GET /api/federated/oauth-status 200 in 412ms
+ GET /api/admin/kg/exposed 200 in 378ms
+ GET /api/federated/oauth-status 200 in 794ms
+ GET /api/notifications 200 in 921ms
+ GET /api/health 200 in 926ms
+ GET /api/me 200 in 945ms
+ POST /api/manage/admin/connector/indexing-status 200 in 1021ms
+ ○ Compiling /admin/api-key ...
+ ✓ Compiled /admin/api-key in 920ms
+ GET /admin/api-key 200 in 1001ms
+ GET /api/health 200 in 519ms
+ GET /api/admin/api-key 200 in 567ms
+ GET /api/admin/api-key 200 in 306ms
+ GET /api/health 200 in 544ms
+ POST /api/manage/admin/connector/indexing-status 200 in 569ms
+ ○ Compiling /admin/configuration/default-assistant ...
+ ✓ Compiled /admin/configuration/default-assistant in 1585ms
+ GET /admin/configuration/default-assistant 200 in 1829ms
+ GET /admin/configuration/default-assistant 200 in 89ms
+ GET /api/health 200 in 421ms
+ GET /api/admin/default-assistant/available-tools 200 in 501ms
+ GET /api/admin/default-assistant/configuration 200 in 465ms
+ GET /chat 200 in 289ms
+ GET /api/chat/search?page=1&page_size=10 200 in 931ms
+ GET /api/health 200 in 594ms
+ GET /api/federated/oauth-status 200 in 786ms
+ GET /api/user/files/recent 200 in 791ms
+ GET /api/notifications 200 in 678ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 868ms
+ GET /api/chat/search?page=1&page_size=10 200 in 986ms
+ GET /api/federated 200 in 1026ms
+ GET /api/user/files/recent 200 in 952ms
+ GET /api/federated/oauth-status 200 in 990ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 945ms
+ GET /api/federated/oauth-status 200 in 399ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 427ms
+ GET /api/federated/oauth-status 200 in 361ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 604ms
+ GET /api/health 200 in 919ms
+ GET /api/notifications 200 in 899ms
+ GET /api/federated 200 in 902ms
+ GET /api/health 200 in 819ms
+ GET /api/notifications 200 in 920ms
+ GET /api/federated 200 in 918ms
+ GET /agenthub 200 in 332ms
+ POST /api/agenthub/run 200 in 3920ms
+ POST /api/agenthub/run 200 in 6722ms
+ POST /api/agenthub/run 200 in 5451ms
+ GET /api/chat/search?page=1&page_size=10 200 in 844ms
+ GET /api/health 200 in 531ms
+ GET /api/federated/oauth-status 200 in 850ms
+ GET /api/user/files/recent 200 in 859ms
+ GET /api/me 200 in 572ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 913ms
+ GET /api/federated 200 in 773ms
+ GET /api/notifications 200 in 812ms
+ GET /api/chat/search?page=1&page_size=10 200 in 744ms
+ GET /api/federated/oauth-status 200 in 723ms
+ GET /api/user/files/recent 200 in 740ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 733ms
+ GET /api/federated/oauth-status 200 in 314ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 366ms
+ GET /api/federated/oauth-status 200 in 405ms
+ GET /api/chat/max-selected-document-tokens?persona_id=0 200 in 392ms
+ GET /admin/indexing/status 200 in 246ms
+ GET /api/federated/oauth-status 200 in 1086ms
+ GET /api/health 200 in 1004ms
+ GET /api/notifications 200 in 1090ms
+ POST /api/manage/admin/connector/indexing-status 200 in 1055ms
+ GET /api/federated/oauth-status 200 in 451ms
+ ○ Compiling /admin/add-connector ...
+ ✓ Compiled /admin/add-connector in 1748ms
+ GET /admin/add-connector 200 in 1866ms
+ GET /api/health 200 in 753ms
+ GET /api/federated 200 in 769ms
+ GET /api/manage/admin/similar-credentials/slack 200 in 769ms
+ GET /admin/add-connector 200 in 2951ms
+ GET /api/admin/llm/built-in/options 200 in 962ms
+ GET /api/llm/provider 200 in 1080ms
+ POST /api/admin/llm/test/default 400 in 1970ms

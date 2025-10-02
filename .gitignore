@@ -1,0 +1,11 @@
+.env*
+secrets.yaml
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/
+.idea/
+./deployment/local_settings.py
+./deployment/credentials.json
+./deployment/.env
