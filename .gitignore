@@ -9,7 +9,7 @@ __pycache__/
 ./deployment/local_settings.py
 ./deployment/credentials.json
 ./deployment/.env
-./node_modules/
+node_modules/
 /dist/
 /build/
 /.parcel-cache/
