@@ -83,6 +83,7 @@ from onyx.server.features.tool.api import router as tool_router
 from onyx.server.federated.api import router as federated_router
 from onyx.server.gpts.api import router as gpts_router
 from onyx.server.features.agenthub.api import router as agenthub_router
+from onyx.server.features.travel_agent.router import router as travel_agent_router
 from onyx.server.kg.api import admin_router as kg_admin_router
 from onyx.server.long_term_logs.long_term_logs_api import (
     router as long_term_logs_router,
@@ -369,6 +370,7 @@ def get_application(lifespan_override: Lifespan | None = None) -> FastAPI:
     include_router_with_global_prefix_prepended(application, onyx_api_router)
     include_router_with_global_prefix_prepended(application, gpts_router)
     include_router_with_global_prefix_prepended(application, agenthub_router)
+    include_router_with_global_prefix_prepended(application, travel_agent_router)
     include_router_with_global_prefix_prepended(application, settings_router)
     include_router_with_global_prefix_prepended(application, settings_admin_router)
     include_router_with_global_prefix_prepended(application, llm_admin_router)

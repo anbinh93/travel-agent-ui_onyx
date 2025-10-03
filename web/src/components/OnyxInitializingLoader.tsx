@@ -1,6 +1,7 @@
 import { Logo } from "./logo/Logo";
 import { useContext } from "react";
 import { SettingsContext } from "./settings/SettingsProvider";
+import { BRANDING } from "@/lib/branding";
 
 export function OnyxInitializingLoader() {
   const settings = useContext(SettingsContext);
@@ -9,7 +10,7 @@ export function OnyxInitializingLoader() {
     <div className="mx-auto my-auto animate-pulse">
       <Logo height={96} width={96} className="mx-auto mb-3" />
       <p className="text-lg text-text font-semibold">
-        Initializing {settings?.enterpriseSettings?.application_name ?? "Onyx"}
+        Initializing {settings?.enterpriseSettings?.application_name ?? BRANDING.APP_NAME}
       </p>
     </div>
   );

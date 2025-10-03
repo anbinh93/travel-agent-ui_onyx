@@ -35,22 +35,18 @@ export function WelcomeMessage({ assistant }: WelcomeMessageProps) {
     >
       {isUnifiedAssistant ? (
         <div className="flex flex-col items-center justify-center">
-          {/* Logo centered */}
-          <div data-testid="travel-agent-logo" className="mb-4">
+          {/* Logo centered - using logo1.png */}
+          <div data-testid="travel-agent-logo" className="mb-6">
             <Image 
-              src="/logo2.png" 
+              src="/logo1.png" 
               alt="Travel Agent Logo" 
-              width={120}
-              height={120}
+              width={140}
+              height={140}
               priority
               className="object-contain"
             />
           </div>
-          {/* Travel Agent text */}
-          <div className="text-4xl font-bold text-text-800 dark:text-neutral-100 mb-3">
-            Travel Agent
-          </div>
-          {/* Greeting message */}
+          {/* Greeting message - removed "Travel Agent" text for cleaner look */}
           <div
             data-testid="greeting-message"
             className="text-text-600 dark:text-neutral-300 text-xl text-center max-w-md"

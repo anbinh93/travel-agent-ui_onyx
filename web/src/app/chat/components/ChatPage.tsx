@@ -66,6 +66,7 @@ import { useChatController } from "../hooks/useChatController";
 import { useAssistantController } from "../hooks/useAssistantController";
 import { useChatSessionController } from "../hooks/useChatSessionController";
 import { useDeepResearchToggle } from "../hooks/useDeepResearchToggle";
+import { useTravelAgent } from "../hooks/useTravelAgent";
 import {
   useChatSessionStore,
   useMaxTokens,
@@ -230,6 +231,12 @@ export function ChatPage({
     chatSessionId: existingChatSessionId,
     assistantId: selectedAssistant?.id,
   });
+
+  const {
+    isEnabled: travelAgentEnabled,
+    isConfigured: travelAgentConfigured,
+    toggleTravelAgent,
+  } = useTravelAgent();
 
   const [presentingDocument, setPresentingDocument] =
     useState<MinimalOnyxDocument | null>(null);
@@ -1230,6 +1237,9 @@ export function ChatPage({
                               <ChatInputBar
                                 deepResearchEnabled={deepResearchEnabled}
                                 toggleDeepResearch={toggleDeepResearch}
+                                travelAgentEnabled={travelAgentEnabled}
+                                travelAgentConfigured={travelAgentConfigured}
+                                toggleTravelAgent={toggleTravelAgent}
                                 toggleDocumentSidebar={toggleDocumentSidebar}
                                 filterManager={filterManager}
                                 llmManager={llmManager}

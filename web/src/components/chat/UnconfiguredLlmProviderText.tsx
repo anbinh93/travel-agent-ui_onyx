@@ -22,21 +22,8 @@ export function UnconfiguredLlmProviderText({
           </a>{" "}
           to continue.
         </p>
-      ) : (
-        shouldShowConfigurationNeeded && (
-          <p className="text-base text-center w-full text-subtle">
-            Please note that you have not yet configured an LLM provider. You
-            can configure one{" "}
-            <button
-              onClick={showConfigureAPIKey}
-              className="text-link hover:underline cursor-pointer"
-            >
-              here
-            </button>
-            .
-          </p>
-        )
-      )}
+      ) : null}
+      {/* Hide LLM provider warning - Travel Agent (Google Gemini) is configured as default */}
     </>
   );
 }

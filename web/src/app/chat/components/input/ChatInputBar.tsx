@@ -32,6 +32,7 @@ import { useUser } from "@/components/user/UserProvider";
 import { SettingsContext } from "@/components/settings/SettingsProvider";
 import { UnconfiguredLlmProviderText } from "@/components/chat/UnconfiguredLlmProviderText";
 import { DeepResearchToggle } from "./DeepResearchToggle";
+import { TravelAgentToggle } from "./TravelAgentToggle";
 import { ActionToggle } from "./ActionManagement";
 import { SelectedTool } from "./SelectedTool";
 import { getProviderIcon } from "@/app/admin/configuration/llm/utils";
@@ -117,6 +118,10 @@ interface ChatInputBarProps {
   setPresentingDocument?: (document: MinimalOnyxDocument) => void;
   toggleDeepResearch: () => void;
   placeholder?: string;
+  // Travel Agent
+  travelAgentEnabled?: boolean;
+  travelAgentConfigured?: boolean;
+  toggleTravelAgent?: () => void;
 }
 
 export const ChatInputBar = React.memo(function ChatInputBar({
@@ -143,6 +148,10 @@ export const ChatInputBar = React.memo(function ChatInputBar({
   toggleDeepResearch,
   placeholder,
   setPresentingDocument,
+  // Travel Agent
+  travelAgentEnabled = false,
+  travelAgentConfigured = false,
+  toggleTravelAgent,
 }: ChatInputBarProps) {
   const { user } = useUser();
 
@@ -606,6 +615,13 @@ export const ChatInputBar = React.memo(function ChatInputBar({
                         toggleDeepResearch={toggleDeepResearch}
                       />
                     )}
+
+                  {travelAgentConfigured && toggleTravelAgent && (
+                    <TravelAgentToggle
+                      travelAgentEnabled={travelAgentEnabled}
+                      toggleTravelAgent={toggleTravelAgent}
+                    />
+                  )}
 
                   {forcedToolIds.length > 0 && (
                     <div className="pl-1 flex items-center gap-2 text-blue-500">

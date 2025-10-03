@@ -85,15 +85,6 @@ const document_management_items = () => [
     ),
     link: "/admin/documents/explorer",
   },
-  {
-    name: (
-      <div className="flex">
-        <ThumbsUpIconSkeleton className="text-text-700" size={18} />
-        <div className="ml-1">Feedback</div>
-      </div>
-    ),
-    link: "/admin/documents/feedback",
-  },
 ];
 
 const custom_assistants_items = (
@@ -114,6 +105,15 @@ const custom_assistants_items = (
 
   if (!isCurator) {
     items.push(
+      {
+        name: (
+          <div className="flex">
+            <ConnectorIconSkeleton className="text-text-700" size={18} />
+            <div className="ml-1">Agent Hub</div>
+          </div>
+        ),
+        link: "/agent-hub",
+      },
       {
         name: (
           <div className="flex">
