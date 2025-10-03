@@ -97,55 +97,73 @@ def _validate_required_env() -> None:
 
 
 def _analyze_user_query(state: TravelState) -> TravelState:
-    """Phân tích câu hỏi của người dùng và xác định xem có cần làm rõ thêm không"""
+    """Analyze user query and determine if clarification is needed"""
     query = state["query"]
     gemini = _gemini_model()
     
     analysis_prompt = f"""
-    Bạn là một chuyên gia tư vấn du lịch. Phân tích câu hỏi của khách hàng và xác định:
-    1. Các thông tin đã có (điểm đến, thời gian, ngân sách, sở thích...)
-    2. Các thông tin còn thiếu cần hỏi thêm
+    You are an expert travel consultant. Analyze the customer's question and extract information.
     
-    Câu hỏi: {query}
+    IMPORTANT: ONLY request clarification if destination is COMPLETELY MISSING or query is extremely vague.
+    If you have at least a destination or can suggest general options, set needs_clarification = false.
     
-    Trả về JSON format:
+    Query: {query}
+    
+    Return JSON format:
     {{
         "has_destination": true/false,
-        "has_duration": true/false,
-        "has_budget": true/false,
-        "has_interests": true/false,
         "needs_clarification": true/false,
-        "clarification_questions": ["câu hỏi 1", "câu hỏi 2", ...],
+        "clarification_questions": ["only ask if absolutely necessary"],
         "extracted_preferences": {{
-            "destination": "...",
-            "duration": "...",
-            "budget": "...",
-            "interests": ["..."]
+            "destination": "location name or 'general' if unclear",
+            "duration": "number of days or 'flexible'",
+            "budget": "budget level or 'flexible'",
+            "interests": ["activities/preferences"]
         }}
     }}
+    
+    NOTE: Prioritize providing plans immediately rather than asking more questions. Only ask if you cannot provide any suggestions.
     """
     
     response = gemini.generate_content(analysis_prompt)
     analysis_text = getattr(response, "text", str(response))
     
-    # Parse JSON response (simplified - should use proper JSON parsing)
+    # Parse JSON response
     import json
     import re
     json_match = re.search(r'\{.*\}', analysis_text, re.DOTALL)
     if json_match:
         try:
             analysis = json.loads(json_match.group())
-            state["needs_clarification"] = analysis.get("needs_clarification", False)
-            state["clarification_questions"] = analysis.get("clarification_questions", [])
+            # Chỉ cho phép clarification nếu THỰC SỰ thiếu destination
+            has_destination = analysis.get("has_destination", False)
+            state["needs_clarification"] = analysis.get("needs_clarification", False) and not has_destination
+            state["clarification_questions"] = analysis.get("clarification_questions", [])[:2]  # Limit to 2 questions max
             state["user_preferences"] = analysis.get("extracted_preferences", {})
         except json.JSONDecodeError:
+            # Nếu parse fail, assume có thể proceed
             state["needs_clarification"] = False
+            state["user_preferences"] = {
+                "destination": "general",
+                "duration": "flexible",
+                "budget": "flexible",
+                "interests": []
+            }
+    else:
+        # Fallback: proceed without clarification
+        state["needs_clarification"] = False
+        state["user_preferences"] = {
+            "destination": query,
+            "duration": "flexible",
+            "budget": "flexible",
+            "interests": []
+        }
     
     return state
 
 
 def _deep_web_search(state: TravelState) -> TravelState:
-    """Tìm kiếm thông tin chi tiết về điểm đến"""
+    """Search for detailed information about the destination"""
     preferences = state.get("user_preferences", {})
     destination = preferences.get("destination", "")
     interests = preferences.get("interests", [])
@@ -153,7 +171,7 @@ def _deep_web_search(state: TravelState) -> TravelState:
     # Build comprehensive search query
     search_query = state["query"]
     if destination:
-        search_query = f"{destination} travel guide"
+        search_query = f"{destination} travel guide 2025"
         if interests:
             search_query += f" {' '.join(interests)}"
     
@@ -164,10 +182,10 @@ def _deep_web_search(state: TravelState) -> TravelState:
     
     # Search for multiple aspects
     search_queries = [
-        f"{destination} best attractions and places to visit",
-        f"{destination} accommodation recommendations",
-        f"{destination} local food and restaurants",
-        f"{destination} travel tips and transportation"
+        f"{destination} best attractions places to visit 2025",
+        f"{destination} hotels accommodation recommendations",
+        f"{destination} local food restaurants must try",
+        f"{destination} travel tips transportation guide"
     ]
     
     all_results = []
@@ -210,7 +228,7 @@ def _gemini_model() -> Any:
 
 
 def _create_travel_plans(state: TravelState) -> TravelState:
-    """Tạo các kế hoạch du lịch cá nhân hóa dựa trên preferences và search results"""
+    """Create personalized travel plans based on preferences and search results"""
     preferences = state.get("user_preferences", {})
     documents = state.get("search_results", [])
     
@@ -224,39 +242,125 @@ def _create_travel_plans(state: TravelState) -> TravelState:
         content = item.get("content") or item.get("snippet") or ""
         sources_summary.append(f"- {title}\n  URL: {url}\n  Info: {content[:300]}")
     
-    destination = preferences.get("destination", "điểm đến")
-    duration = preferences.get("duration", "vài ngày")
-    budget = preferences.get("budget", "linh hoạt")
+    destination = preferences.get("destination", "destination")
+    duration = preferences.get("duration", "flexible")
+    budget = preferences.get("budget", "flexible")
     interests = preferences.get("interests", [])
     
     planning_prompt = f"""
-    Bạn là một chuyên gia tư vấn du lịch chuyên nghiệp. Hãy tạo 3 kế hoạch du lịch chi tiết và cá nhân hóa.
+    You are a professional travel consultant. Create 3 detailed and personalized travel plans.
     
-    THÔNG TIN KHÁCH HÀNG:
-    - Điểm đến: {destination}
-    - Thời gian: {duration}
-    - Ngân sách: {budget}
-    - Sở thích: {', '.join(interests) if interests else 'chưa xác định'}
+    CLIENT INFORMATION:
+    - Destination: {destination}
+    - Duration: {duration}
+    - Budget: {budget}
+    - Interests: {', '.join(interests) if interests else 'not specified'}
     
-    THÔNG TIN TÌM ĐƯỢC:
+    RESEARCH INFORMATION:
     {chr(10).join(sources_summary[:10])}
     
-    YÊU CẦU:
-    Tạo 3 PLAN khác nhau (Budget-Friendly, Balanced, Premium) với:
+    REQUIREMENTS:
+    Create 3 DISTINCT PLANS (Budget-Friendly, Balanced, Premium) with this EXACT HTML-enhanced markdown structure:
     
-    1. **Tên kế hoạch** và phong cách
-    2. **Tổng quan**: Mô tả ngắn gọn về kế hoạch
-    3. **Lịch trình chi tiết theo ngày**:
-       - Sáng: Hoạt động + địa điểm cụ thể
-       - Trưa: Ăn trưa đâu + món gì
-       - Chiều: Hoạt động + địa điểm
-       - Tối: Ăn tối + giải trí
-    4. **Khách sạn đề xuất**: Tên + vị trí + giá tham khảo
-    5. **Chi phí ước tính**: Chia nhỏ (ăn, ở, di chuyển, vui chơi)
-    6. **Tips quan trọng**: 3-5 lời khuyên hữu ích
-    7. **Links tham khảo**: Trích dẫn các URL có sẵn
+    <div style="border: 2px solid #4F46E5; border-radius: 12px; padding: 20px; margin: 20px 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
     
-    Format markdown rõ ràng, dễ đọc. Đưa ra các gợi ý CỤ THỂ, thực tế, có thể thực hiện được.
+    # 🌟 Plan 1: Budget-Friendly Explorer
+    
+    **Perfect for:** Travelers who want authentic experiences without breaking the bank
+    
+    </div>
+    
+    ## 📋 Overview
+    
+    > *[2-3 sentences describing this plan's unique approach, highlighting the value and experiences it offers]*
+    
+    ---
+    
+    ## 📅 Day-by-Day Itinerary
+    
+    <details open>
+    <summary><strong>🌅 Day 1: [Theme Name]</strong></summary>
+    
+    | Time | Activity | Details | Cost |
+    |------|----------|---------|------|
+    | **9:00 AM** | 🏛️ **[Activity Name]** | [Specific location/venue]<br>*[Brief description]* | $XX |
+    | **12:30 PM** | 🍜 **Lunch** | **[Restaurant Name]**<br>[Signature dish] | $XX |
+    | **2:00 PM** | 🎨 **[Activity Name]** | [Specific location]<br>*[What to see/do]* | $XX |
+    | **6:00 PM** | 🌆 **Evening** | **[Venue/Restaurant]**<br>[Activity/dish details] | $XX |
+    
+    💡 **Day 1 Pro Tip:** [Specific actionable tip for this day]
+    
+    </details>
+    
+    [Repeat this structure for each day]
+    
+    ---
+    
+    ## 🏨 Where to Stay
+    
+    <div style="background: #F3F4F6; padding: 15px; border-radius: 8px; border-left: 4px solid #4F46E5;">
+    
+    ### **[Hotel/Hostel Name]** ⭐⭐⭐
+    
+    - 📍 **Location:** [Specific neighborhood/area]
+    - 💰 **Price:** $XX per night
+    - ✨ **Why Choose This:** 
+      - [Feature 1]
+      - [Feature 2]
+      - [Feature 3]
+    - 🔗 **Book:** [URL if available]
+    
+    </div>
+    
+    ---
+    
+    ## 💰 Budget Breakdown
+    
+    | Category | Daily | Total ({duration}) |
+    |----------|-------|----------|
+    | 🏨 Accommodation | $XX | **$XXX** |
+    | 🍽️ Meals | $XX | **$XXX** |
+    | 🚇 Transportation | $XX | **$XXX** |
+    | 🎭 Activities & Entertainment | $XX | **$XXX** |
+    | 🎁 Shopping & Extras | $XX | **$XXX** |
+    | **💵 TOTAL** | **$XX** | **💰 $XXX** |
+    
+    ---
+    
+    ## 💡 Insider Tips & Hacks
+    
+    1. 🎫 **[Tip category]:** [Specific actionable advice with details]
+    
+    2. 🕐 **[Tip category]:** [Practical tip that saves money/time]
+    
+    3. 📱 **[Tip category]:** [Local insight or app recommendation]
+    
+    4. 🍴 **[Tip category]:** [Food/dining hack]
+    
+    5. 🚫 **[Tip category]:** [What to avoid]
+    
+    ---
+    
+    ## 🔗 Essential Resources
+    
+    - 🗺️ **Transportation:** [Specific link/card info]
+    - 📱 **Must-Have Apps:** [App names with brief description]
+    - 🎟️ **Advance Bookings:** [What to book ahead + links]
+    - 🌐 **Official Tourism:** [URL]
+    
+    ---
+    
+    [Repeat entire structure for Plan 2: Balanced Adventurer and Plan 3: Premium Experience]
+    
+    IMPORTANT FORMATTING RULES:
+    - Use HTML divs for colored boxes and highlights
+    - Use tables for itineraries (more scannable)
+    - Use <details> tags for collapsible days
+    - Use emojis consistently for visual hierarchy
+    - Be SPECIFIC: real names, exact prices, actual locations
+    - Keep tone professional but friendly
+    - Include actual URLs from research
+    - Make it PRINT-READY and SHAREABLE
     """
     
     response = gemini.generate_content(planning_prompt)
@@ -271,27 +375,69 @@ def _create_travel_plans(state: TravelState) -> TravelState:
 
 
 def _synthesize_answer(state: TravelState) -> TravelState:
-    """Tổng hợp câu trả lời cuối cùng"""
+    """Synthesize final answer"""
     if state.get("answer"):
         return state
     
-    # Nếu cần clarification, trả về câu hỏi
+    # If clarification needed, return questions (ONLY if absolutely necessary)
     if state.get("needs_clarification"):
         questions = state.get("clarification_questions", [])
         if questions:
-            clarification_text = "Để tư vấn chính xác hơn, cho mình hỏi thêm:\n\n"
+            clarification_text = "# 🤔 Quick Questions\n\n"
+            clarification_text += "To create the perfect itinerary for you, I need a bit more information:\n\n"
             for i, q in enumerate(questions, 1):
                 clarification_text += f"{i}. {q}\n"
-            clarification_text += "\nBạn có thể chia sẻ thêm để mình đưa ra kế hoạch phù hợp nhất nhé! 😊"
+            clarification_text += "\n💡 **Tip:** Include destination, duration, and budget for the best recommendations!"
             state["answer"] = clarification_text
             return state
     
-    # Nếu có travel plans, format output
+    # If travel plans exist, format output
     travel_plans = state.get("travel_plans", [])
     if travel_plans:
-        state["answer"] = travel_plans[0].get("content", "")
+        answer = travel_plans[0].get("content", "")
+        
+        # Add professional intro with enhanced styling
+        preferences = state.get("user_preferences", {})
+        destination = preferences.get("destination", "")
+        duration = preferences.get("duration", "")
+        budget = preferences.get("budget", "")
+        interests = preferences.get("interests", [])
+        
+        # Build styled header
+        intro = '<div style="text-align: center; padding: 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; margin-bottom: 30px;">\n\n'
+        
+        if destination and destination != "general":
+            intro += f'# ✈️ Your {destination} Adventure Awaits!\n\n'
+            if duration and duration != "flexible":
+                intro += f'### 🎯 {duration} of unforgettable experiences\n\n'
+            if budget and budget != "flexible":
+                intro += f'💰 Budget: {budget}\n\n'
+            if interests:
+                intro += f'🎨 Focus: {", ".join(interests)}\n\n'
+        else:
+            intro += '# ✈️ Your Perfect Journey Starts Here!\n\n'
+            intro += '### 🌍 Personalized travel plans just for you\n\n'
+        
+        intro += '</div>\n\n'
+        intro += '<div style="background: #FEF3C7; padding: 15px; border-radius: 8px; border-left: 4px solid #F59E0B; margin: 20px 0;">\n\n'
+        intro += '**📖 How to use these plans:**\n\n'
+        intro += '1. 🔍 Review all 3 plans to find your perfect match\n'
+        intro += '2. 📋 Each plan includes detailed daily itineraries, accommodation, and costs\n'
+        intro += '3. 💡 Check insider tips to maximize your experience\n'
+        intro += '4. 🔗 Use the resource links for bookings and more information\n\n'
+        intro += '</div>\n\n'
+        intro += '---\n\n'
+        
+        # Add table of contents
+        intro += '## 📑 Quick Navigation\n\n'
+        intro += '- [🌟 Plan 1: Budget-Friendly Explorer](#plan-1-budget-friendly-explorer)\n'
+        intro += '- [⚖️ Plan 2: Balanced Adventurer](#plan-2-balanced-adventurer)\n'
+        intro += '- [💎 Plan 3: Premium Experience](#plan-3-premium-experience)\n\n'
+        intro += '---\n\n'
+        
+        state["answer"] = intro + answer
     else:
-        # Fallback to simple answer
+        # Fallback to simple answer (shouldn't happen often)
         query = state["query"]
         documents = state.get("search_results", [])
         gemini = _gemini_model()
@@ -304,18 +450,44 @@ def _synthesize_answer(state: TravelState) -> TravelState:
             sources_summary.append(f"- {title}\n  {url}\n  {content[:200]}")
         
         prompt = f"""
-        Dựa trên thông tin tìm được, hãy trả lời câu hỏi của khách hàng một cách chi tiết và hữu ích.
+        Based on the research findings, provide a detailed and friendly answer to the customer's travel question.
         
-        Câu hỏi: {query}
+        Question: {query}
         
-        Thông tin:
+        Research Information:
         {chr(10).join(sources_summary[:5])}
         
-        Hãy đưa ra câu trả lời thân thiện, chuyên nghiệp với các gợi ý cụ thể và links tham khảo.
+        Provide SPECIFIC, practical suggestions with:
+        - Must-visit attractions
+        - Hotel/accommodation recommendations
+        - Local food and restaurants to try
+        - Important tips
+        - Reference links
+        
+        Format in clean, scannable markdown with appropriate emojis.
+        Use this structure:
+        
+        # ✈️ [Topic Title]
+        
+        ## 🎯 Top Recommendations
+        [Specific suggestions]
+        
+        ## 🏨 Where to Stay
+        [Hotel recommendations]
+        
+        ## 🍜 What to Eat
+        [Food recommendations]
+        
+        ## 💡 Insider Tips
+        [Practical tips]
+        
+        ## 🔗 Useful Resources
+        [Links]
         """
         
         response = gemini.generate_content(prompt)
-        state["answer"] = getattr(response, "text", str(response))
+        answer = getattr(response, "text", str(response))
+        state["answer"] = f"# ✈️ Travel Guide\n\n{answer}"
     
     return state
 
@@ -397,12 +569,12 @@ register_agent(
         key="travel_planning_agent",
         name="AI Travel Planning Assistant",
         description=(
-            "Trợ lý du lịch thông minh với khả năng:\n"
-            "• Đặt câu hỏi để hiểu rõ nhu cầu khách hàng\n"
-            "• Tìm kiếm thông tin chi tiết về điểm đến\n"
-            "• Lập kế hoạch du lịch cá nhân hóa với 3 lựa chọn (Budget/Balanced/Premium)\n"
-            "• Đề xuất lịch trình chi tiết theo ngày, khách sạn, ăn uống, chi phí\n"
-            "• Cung cấp tips và links hữu ích"
+            "✈️ Professional Travel Consultant - Instant Itineraries:\n"
+            "📋 3 detailed plans (Budget/Balanced/Premium) with beautiful formatting\n"
+            "📅 Day-by-day schedules with specific venues, prices & tips\n"
+            "🏨 Hotel recommendations with cost breakdowns\n"
+            "💡 Insider tips & essential resources\n"
+            "🎨 Rich markdown format with tables, emojis & styled sections"
         ),
         runner=run_travel_agent,
     )

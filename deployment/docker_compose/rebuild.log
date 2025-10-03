@@ -3939,3 +3939,32 @@ Onyx Rebuild & Start Script
  Container onyx-nginx-1  Started
 
 → Waiting for services to start (120 seconds)...
+
+→ Checking API server health...
+✗ API Server is not responding yet. Check logs with:
+  docker logs onyx-api_server-1
+
+→ Checking services status...
+onyx-nginx-1                    Up 2 minutes
+onyx-web_server-1               Up 2 minutes
+onyx-background-1               Up 2 minutes
+onyx-api_server-1               Up 2 minutes
+onyx-inference_model_server-1   Up 18 seconds
+onyx-minio-1                    Up 2 minutes (unhealthy)
+onyx-relational_db-1            Up 2 minutes
+onyx-indexing_model_server-1    Up 2 minutes
+onyx-index-1                    Up 2 minutes
+onyx-cache-1                    Up 2 minutes
+
+=========================================
+Rebuild complete!
+=========================================
+
+Test agent endpoint with:
+  curl -X POST http://localhost:8080/agenthub/run \
+    -H 'Content-Type: application/json' \
+    -d '{"agent_key": "travel_planning_agent", "query": "Test", "context": {}}'
+
+View logs with:
+  docker logs -f onyx-api_server-1
+
