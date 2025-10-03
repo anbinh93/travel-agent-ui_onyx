@@ -265,8 +265,8 @@ function Main() {
             </div>
             <p>
               (To use Knowledge Graph queries, you&apos;ll need a dedicated
-              Assistant configured in a specific way. Please contact the Onyx
-              team for setup instructions.)
+              Assistant configured in a specific way. Please contact the Travel Agent
+              support team for setup instructions.)
             </p>
           </div>
           <p className="text-text-600">
