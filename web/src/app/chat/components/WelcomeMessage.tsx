@@ -4,6 +4,7 @@ import { MinimalPersonaSnapshot } from "@/app/admin/assistants/interfaces";
 import { getRandomGreeting } from "@/lib/chat/greetingMessages";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface WelcomeMessageProps {
   assistant: MinimalPersonaSnapshot;
@@ -32,35 +33,46 @@ export function WelcomeMessage({ assistant }: WelcomeMessageProps) {
         "duration-300"
       )}
     >
-      <div className="flex items-center">
-        {isUnifiedAssistant ? (
-          <>
-            <div data-testid="onyx-logo">
-              <Logo size="large" />
-            </div>
-            <div
-              data-testid="greeting-message"
-              className="ml-6 text-text-600 dark:text-neutral-100 text-3xl font-bold max-w-md"
-            >
-              {greeting}
-            </div>
-          </>
-        ) : (
-          <>
-            <AssistantIcon
-              colorOverride="text-text-800"
-              assistant={assistant}
-              size="large"
+      {isUnifiedAssistant ? (
+        <div className="flex flex-col items-center justify-center">
+          {/* Logo centered */}
+          <div data-testid="travel-agent-logo" className="mb-4">
+            <Image 
+              src="/logo2.png" 
+              alt="Travel Agent Logo" 
+              width={120}
+              height={120}
+              priority
+              className="object-contain"
             />
-            <div
-              data-testid="assistant-name-display"
-              className="ml-4 flex justify-center items-center text-center text-3xl font-bold"
-            >
-              {assistant.name}
-            </div>
-          </>
-        )}
-      </div>
+          </div>
+          {/* Travel Agent text */}
+          <div className="text-4xl font-bold text-text-800 dark:text-neutral-100 mb-3">
+            Travel Agent
+          </div>
+          {/* Greeting message */}
+          <div
+            data-testid="greeting-message"
+            className="text-text-600 dark:text-neutral-300 text-xl text-center max-w-md"
+          >
+            {greeting}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center">
+          <AssistantIcon
+            colorOverride="text-text-800"
+            assistant={assistant}
+            size="large"
+          />
+          <div
+            data-testid="assistant-name-display"
+            className="ml-4 flex justify-center items-center text-center text-3xl font-bold"
+          >
+            {assistant.name}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

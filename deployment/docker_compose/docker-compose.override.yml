@@ -1,0 +1,99 @@
+# Docker Compose Override to Fix Memory Issues
+# This file will be automatically picked up by docker compose
+# Optimized for Docker Desktop with 8GB total memory
+# Total allocation: ~7GB (2+1.5+1.5+0.5+0.8+0.4+0.5+0.2+0.2 = 7.6GB)
+
+services:
+  # Primary model server - needs most memory
+  inference_model_server:
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 800M
+    # Critical for PyTorch to avoid OOM
+    shm_size: 1g
+    environment:
+      - TORCH_NUM_THREADS=2
+
+  # Secondary model server - can be more constrained
+  indexing_model_server:
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+        reservations:
+          memory: 600M
+    shm_size: 512m
+    environment:
+      - TORCH_NUM_THREADS=2
+
+  # Vespa search engine - memory hungry
+  # WARNING: Running with less than 4GB is NOT recommended for production
+  index:
+    deploy:
+      resources:
+        limits:
+          memory: 1.5G
+        reservations:
+          memory: 800M
+    shm_size: 256m
+    environment:
+      # Bypass Vespa's 4GB memory check (DEV ONLY - NOT FOR PRODUCTION)
+      - VESPA_IGNORE_NOT_ENOUGH_MEMORY=true
+
+  # API server
+  api_server:
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+        reservations:
+          memory: 400M
+
+  # Background workers
+  background:
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+        reservations:
+          memory: 400M
+
+  # Web server
+  web_server:
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+        reservations:
+          memory: 256M
+
+  # Database
+  relational_db:
+    deploy:
+      resources:
+        limits:
+          memory: 400M
+        reservations:
+          memory: 200M
+    shm_size: 128m
+
+  # Cache
+  cache:
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+        reservations:
+          memory: 100M
+
+  # MinIO
+  minio:
+    deploy:
+      resources:
+        limits:
+          memory: 200M
+        reservations:
+          memory: 100M
